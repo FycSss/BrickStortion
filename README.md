@@ -25,7 +25,7 @@ Brickstortion is een FL Studio-compatible VST3 distortion plugin gebouwd met JUC
 ### Windows (Visual Studio)
 
 ```powershell
-cd /home/runner/work/Flstudio-vst/Flstudio-vst
+cd <project-root>
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release
 ```
@@ -35,7 +35,7 @@ VST3 output staat na build in de gegenereerde `VST3` outputmap van JUCE (en met 
 ### macOS
 
 ```bash
-cd /home/runner/work/Flstudio-vst/Flstudio-vst
+cd <project-root>
 cmake -S . -B build
 cmake --build build --config Release
 ```
