@@ -1,0 +1,115 @@
+name: Build and Package
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  BUILD_DIR: build
+  CONFIG: Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          choco install -y ninja
+          choco install -y innosetup
+
+      - name: Configure
+        run: cmake -S . -B $env:BUILD_DIR -G "Ninja" -DCMAKE_BUILD_TYPE=$env:CONFIG
+
+      - name: Build
+        run: cmake --build $env:BUILD_DIR --config $env:CONFIG
+
+      - name: Read project version
+        id: project_version
+        shell: pwsh
+        run: |
+          $cachePath = Join-Path $env:BUILD_DIR "CMakeCache.txt"
+          if (-not (Test-Path $cachePath)) {
+            Write-Error "CMakeCache.txt not found at $cachePath"
+            exit 1
+          }
+          $match = Select-String -Path $cachePath -Pattern '^PROJECT_VERSION:STRING=(.+)$'
+          if (-not $match) {
+            Write-Error "Failed to determine project version from $cachePath"
+            exit 1
+          }
+          $version = $match.Matches[0].Groups[1].Value.Trim()
+          "value=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Prepare installer output dir
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:BUILD_DIR/installer" | Out-Null
+
+      - name: Locate VST3 bundle
+        id: find_vst3
+        shell: pwsh
+        env:
+          PROJECT_VERSION: ${{ steps.project_version.outputs.value }}
+        run: |
+          $vst3 = Get-ChildItem -Path $env:BUILD_DIR -Filter "Brickstortion.vst3" -Recurse -Directory | Select-Object -First 1
+          if (-not $vst3) {
+            Write-Error "VST3 bundle not found"
+            exit 1
+          }
+          $version = $env:PROJECT_VERSION
+          if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME.StartsWith("v") -and $env:GITHUB_REF_NAME.Length -gt 1) {
+            $candidate = $env:GITHUB_REF_NAME.Substring(1)
+            if ($candidate -notmatch '^[0-9]+(\.[0-9]+)*$') {
+              Write-Error "Tag version '$candidate' is not a valid numeric version"
+              exit 1
+            }
+            $version = $candidate
+          }
+          "vst3_path=$($vst3.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "VST3_PATH=$($vst3.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "app_version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Archive VST3 bundle
+        shell: pwsh
+        env:
+          APP_VERSION: ${{ steps.find_vst3.outputs.app_version }}
+        run: |
+          $zipPath = Join-Path $env:BUILD_DIR "installer/Brickstortion-$env:APP_VERSION-VST3.zip"
+          Compress-Archive -Path "$env:VST3_PATH\*" -DestinationPath $zipPath -Force
+
+      - name: Build installer
+        shell: pwsh
+        env:
+          APP_VERSION: ${{ steps.find_vst3.outputs.app_version }}
+        run: |
+          $script = Join-Path $PWD "installer\\Brickstortion.iss"
+          $outputDir = Join-Path $env:BUILD_DIR "installer"
+          iscc.exe "/dVST3_PATH=""$env:VST3_PATH""" "/dAppVersion=""$env:APP_VERSION""" "/dOUTPUT_DIR=""$outputDir""" $script
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Brickstortion-${{ env.CONFIG }}-windows
+          path: |
+            ${{ env.BUILD_DIR }}/installer/Brickstortion-${{ steps.find_vst3.outputs.app_version }}-VST3.zip
+            ${{ env.BUILD_DIR }}/installer/Brickstortion-Setup-${{ steps.find_vst3.outputs.app_version }}.exe
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ env.BUILD_DIR }}/installer/Brickstortion-${{ steps.find_vst3.outputs.app_version }}-VST3.zip
+            ${{ env.BUILD_DIR }}/installer/Brickstortion-Setup-${{ steps.find_vst3.outputs.app_version }}.exe
+          generate_release_notes: true

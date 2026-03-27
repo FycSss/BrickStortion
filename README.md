@@ -52,6 +52,8 @@ cpack --config build/CPackConfig.cmake
 - Dit maakt standaard een ZIP package.
 - Op Windows wordt ook NSIS geprobeerd als NSIS beschikbaar is.
 
+Voor een volledige Windows-installatie (met uninstaller) is er een Inno Setup-script beschikbaar in `installer/Brickstortion.iss`. De GitHub Actions workflow bouwt automatisch de VST3 (Release, Ninja), maakt de Inno Setup installer (`Brickstortion-Setup-<versie>.exe`) die naar `C:\Program Files\Common Files\VST3\Brickstortion.vst3` installeert, en publiceert deze als artefact en release asset op tags (`v*`).
+
 ## Assets / skin / theme vervangen
 
 - Standaard asset map: `/Assets`
