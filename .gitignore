@@ -5,3 +5,6 @@
 *.suo
 *.vcxproj.user
 .DS_Store
+Brickstortion-Setup-*.exe
+Brickstortion*.vst3/
+Brickstortion*.zip
