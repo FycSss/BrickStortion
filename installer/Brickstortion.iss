@@ -1,9 +1,17 @@
-#define AppVersion GetStringDef("AppVersion", "0.1.0")
-#define Vst3Path GetStringDef("VST3_PATH", "")
-#define OutputDirectory GetStringDef("OUTPUT_DIR", AddBackslash(ExpandConstant("{#SourcePath}")) + "Output")
+#ifndef AppVersion
+  #define AppVersion "0.1.0"
+#endif
 
-#if Vst3Path == ""
-  #error "VST3_PATH must be provided and point to the built Brickstortion.vst3 directory"
+#ifndef OutputDirectory
+  #if SourcePath == ""
+    #define OutputDirectory "Output"
+  #else
+    #define OutputDirectory SourcePath + "\Output"
+  #endif
+#endif
+
+#ifndef Vst3Path
+  #error "Vst3Path must be defined. Example: ISCC /DVst3Path=\"C:\path\to\Brickstortion.vst3\""
 #endif
 
 [Setup]

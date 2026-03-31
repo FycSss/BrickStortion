@@ -54,6 +54,17 @@ cpack --config build/CPackConfig.cmake
 
 Voor een volledige Windows-installatie (met uninstaller) is er een Inno Setup-script beschikbaar in `installer/Brickstortion.iss`. De GitHub Actions workflow bouwt automatisch de VST3 (Release, Ninja), maakt de Inno Setup installer (`Brickstortion-Setup-<versie>.exe`) die naar `C:\Program Files\Common Files\VST3\Brickstortion.vst3` installeert, en publiceert deze als artefact en release asset op tags (`v*`).
 
+### Build installer (Windows)
+
+Zorg dat Inno Setup 6.7.1 is geïnstalleerd. Bouw de installer vanuit PowerShell met:
+
+```powershell
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ".\installer\Brickstortion.iss" `
+  "/DVst3Path=C:\Users\landm\Documents\VST3\Brickstortion.vst3" `
+  "/DAppVersion=0.1.0" `
+  "/DOutputDirectory=$PWD\dist"
+```
+
 ## Assets / skin / theme vervangen
 
 - Standaard asset map: `/Assets`
