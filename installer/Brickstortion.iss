@@ -3,11 +3,7 @@
 #endif
 
 #ifndef OutputDirectory
-  #if SourcePath == ""
-    #define OutputDirectory "Output"
-  #else
-    #define OutputDirectory SourcePath + "\Output"
-  #endif
+  #define OutputDirectory SourcePath + "\Output"
 #endif
 
 #ifndef Vst3Path
