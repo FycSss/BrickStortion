@@ -60,7 +60,7 @@ Zorg dat Inno Setup 6.7.1 is geïnstalleerd. Bouw de installer vanuit PowerShell
 
 ```powershell
 & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ".\installer\Brickstortion.iss" `
-  "/DVst3Path=C:\Users\landm\Documents\VST3\Brickstortion.vst3" `
+  "/DVst3Path=C:\Users\<your-user>\Documents\VST3\Brickstortion.vst3" `
   "/DAppVersion=0.1.0" `
   "/DOutputDirectory=$PWD\dist"
 ```
