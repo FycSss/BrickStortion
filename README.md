@@ -65,6 +65,8 @@ Zorg dat Inno Setup 6.7.1 is geïnstalleerd. Bouw de installer vanuit PowerShell
   "/DOutputDirectory=$PWD\dist"
 ```
 
+Pas `Vst3Path` en `AppVersion` aan naar je eigen build en versie.
+
 ## Assets / skin / theme vervangen
 
 - Standaard asset map: `/Assets`

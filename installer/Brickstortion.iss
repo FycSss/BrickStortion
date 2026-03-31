@@ -11,7 +11,7 @@
 #endif
 
 #ifndef Vst3Path
-  #error "Vst3Path must be defined. Example: ISCC /DVst3Path=\"C:\\path\\to\\Brickstortion.vst3\""
+  #error "Define Vst3Path (e.g. ISCC /DVst3Path=\"C:\\path\\to\\Brickstortion.vst3\") before building the installer."
 #endif
 
 [Setup]
